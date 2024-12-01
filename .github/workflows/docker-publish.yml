@@ -102,11 +102,11 @@ jobs:
 
       
       - name: Build an image from Dockerfile
-        run: docker build -t docker.io/LBFflintocker/ue19-lab-05:${{ github.sha }} .
+        run: docker build -t docker.io/lbfflintocker/ue19-lab-05:${{ github.sha }} .
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: 'docker.io/LBFflintocker/ue19-lab-05:${{ github.sha }}'
+          image-ref: 'docker.io/lbfflintocker/ue19-lab-05:${{ github.sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
