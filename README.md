@@ -5,7 +5,7 @@ Cette application interroge l'API JokeAPI pour afficher une blague aléatoire.
 
 ## Fonctionnalités
 - Interroge une API publique pour récupérer des blagues aléatoires.
-- Affiche les blagues sous forme de texte (une seule phrase ou en deux parties).
+- Affiche les blagues sous forme de texte.
 - Exécutable localement ou via un conteneur Docker.
 
 ---
