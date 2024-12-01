@@ -1,64 +1,31 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# GitHub recommends pinning actions to a commit SHA.
-# To get a newer version, you will need to update the SHA.
-# You can also reference a tag or branch, but the action may change without warning.
-
-name: Publish Docker image
+name: Build and Publish Docker Image
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main  # Déclenche l'action sur les modifications de la branche main
 
 jobs:
-  push_to_registries:
-    name: Push Docker image to multiple registries
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
+  build:
+    runs-on: ubuntu-latest  # Utilisation de l'environnement Ubuntu pour exécuter l'action
+
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v2  # Clone le repository
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2  # Configure Docker Buildx pour construire des images multiplateformes
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Log in to GitHub Docker registry
+      uses: docker/login-action@v2
+      with:
+        username: ${{ github.actor }}  # Utilise l'authentification GitHub
+        password: ${{ secrets.GITHUB_TOKEN }}  # Utilise le token GitHub pour se connecter au registre
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-        with:
-          images: |
-            my-docker-hub-namespace/my-docker-hub-repository
-            ghcr.io/${{ github.repository }}
-
-      - name: Build and push Docker images
-        id: push
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        context: .  # Le contexte de la construction de l'image est le répertoire actuel
+        file: ./Dockerfile  # Chemin vers le Dockerfile
+        push: true  # Push l'image vers le registre GitHub Packages
+        tags: ${{ github.repository }}:latest  # Tag de l'image, utilisez le nom du repository pour l'image
